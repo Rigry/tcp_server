@@ -9,6 +9,7 @@ type Server struct {
 	listener         []net.Listener
 	conn             net.Conn
 	HoldingRegisters []uint16
+	modbus_slave      *ModBus
 }
 
 func Make() *Server {
@@ -40,6 +41,15 @@ func (s *Server) accept(listen net.Listener) (err error) {
 
 	s.listener = append(s.listener, listen)
 
+	packet := make([]byte, 512)
+	bytesRead, _ := s.conn.Read(packet)
+	packet = packet[:bytesRead]
+
+	s.modbus_slave = get_packet(packet)
+	// s.modbus_slave.print()
+
+	// go s.HandleRequest()
+
 	return err
 }
 
@@ -50,5 +60,12 @@ func (s *Server) Close() {
 }
 
 func (s *Server) HandleRequest() {
-	s.conn.Write([]byte("Message received." + "\n"))
+	// s.conn.Write([]byte("Message received." + "\n"))
+	// defer s.conn.Close()
+	input := make([]byte, 20)
+	n, _ := s.conn.Read(input)
+	input = input[0:n]
+	if input[6] == 1 {
+		s.modbus_slave.print()
+	}
 }
