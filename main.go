@@ -1,7 +1,7 @@
 package main
 
 import "fmt"
-// import "time"
+import "time"
 import "tcp_server/server"
 
 func main() {
@@ -10,7 +10,6 @@ func main() {
 
 	s := server.Make()
 
-
 	err := s.Listen()
 	if err != nil {
 		fmt.Println("failed listeninng", err)
@@ -18,8 +17,7 @@ func main() {
 	defer s.Close()
 
 	for {
-		// time.Sleep(1 * time.Second)
-			s.HandleRequest()
+		time.Sleep(1 * time.Second)
 	}
 
 }
