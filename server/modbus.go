@@ -15,9 +15,9 @@ type ModBus struct {
 	data          []byte
 }
 
-func getPacket(packet []byte) *ModBus {
+func getPacket(packet []byte) (*ModBus, error){
 	if len(packet) < 12 {
-		fmt.Println("Not full packet")
+		return nil, fmt.Errorf("Not full packet %v", packet)
 	}
 
 	modbus := &ModBus{
@@ -29,7 +29,7 @@ func getPacket(packet []byte) *ModBus {
 		data:          packet[8:],
 	}
 
-	return modbus
+	return modbus, nil
 }
 
 func (modbus *ModBus) getFirstQtyRegs() (firstReg, qtyReg, lastReg uint16) {
