@@ -1,7 +1,6 @@
 package server
 
 import (
-	// "log"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -19,9 +18,9 @@ type Server struct {
 func Make() *Server {
 	server := &Server{}
 
-	server.holdingRegisters = make([]uint16, 10)
-	server.holdingRegisters[0] = 12
-	server.holdingRegisters[1] = 7
+	server.holdingRegisters = make([]uint16, 100)
+	// server.holdingRegisters[0] = 12
+	// server.holdingRegisters[1] = 7
 
 	return server
 }
@@ -55,8 +54,7 @@ func (server *Server) accept(listen net.Listener) (err error) {
 				bytes, _ := server.conn.Read(packet)
 				packet = packet[:bytes]
 
-				modbus := getPacket(packet)
-				server.modbus = modbus
+				server.modbus, _ = getPacket(packet)
 				server.HandleRequest()
 			}
 		}(server.conn)
@@ -73,7 +71,7 @@ func (server *Server) Close() {
 // func (server *Server) tcp_header() (header []byte) {
 
 // }
-
+// answer03 ответ на чтение регистров, лучше разместить в Modbus
 func (server *Server) answer03() (answer []byte) {
 	firstReg, qtyReg, lastReg := server.modbus.getFirstQtyRegs()
 	data := make([]byte, 1)
@@ -91,6 +89,7 @@ func (server *Server) answer03() (answer []byte) {
 	return answer
 }
 
+// // answer16 ответ на запись регистров, лучше разместить в Modbus
 func (server *Server) answer16() (answer []byte) {
 	firstReg, qtyReg, lastReg := server.modbus.getFirstQtyRegs()
 	values := bytesToUint16(server.modbus.getData()[5:])
