@@ -1,6 +1,7 @@
 package server
 
 import "testing"
+import "time"
 
 func TestAnswer16 (t *testing.T) {
 	server := Make()
@@ -19,6 +20,9 @@ func TestAnswer03 (t *testing.T) {
 	server := Make()
 	server.holdingRegisters[0] = 12
 	server.holdingRegisters[1] = 7
+	server.SetLifeTime(3)
+	server.timeStamp[0] = time.Now().Unix()
+	server.timeStamp[1] = time.Now().Unix()
 	packet := []byte{0,1,0,0,0,6,1,0x3,0,0,0,2}
 	server.modbus, _ = getPacket(packet)
 	expected := []byte{0,1,0,0,0,7,1,0x3,4,0,12,0,7}
@@ -28,6 +32,9 @@ func TestAnswer03 (t *testing.T) {
 			t.Errorf("expected %v, got %v", expected[i], got[i])
 		}
 	}
+	time.Sleep(3 * time.Second)
+	expected = []byte{0,1,0,0,0,3,1,0x83,2}
+	got = server.answer03()
 }
 
 func TestAnsweError (t *testing.T) {
