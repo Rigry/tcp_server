@@ -35,6 +35,11 @@ func TestAnswer03 (t *testing.T) {
 	time.Sleep(3 * time.Second)
 	expected = []byte{0,1,0,0,0,3,1,0x83,2}
 	got = server.answer03()
+	for i := range got {
+		if got[i] != expected[i] {
+			t.Errorf("expected %v, got %v", expected[i], got[i])
+		}
+	}
 }
 
 func TestAnsweError (t *testing.T) {
@@ -47,6 +52,14 @@ func TestAnsweError (t *testing.T) {
 		if got[i] != expected[i] {
 			t.Errorf("expected %v, got %v", expected[i], got[i])
 		}
+	}
+}
+
+func TestSetLifeTime (t *testing.T) {
+	server := Make()
+	server.SetLifeTime(10)
+	if server.lifeTime != 10 {
+		t.Errorf("expected %v, got %v", 10, server.lifeTime)
 	}
 }
 
