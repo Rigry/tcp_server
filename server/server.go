@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 )
 
 // Server структура сервера
@@ -11,16 +12,25 @@ type Server struct {
 	listener         []net.Listener
 	conn             net.Conn
 	holdingRegisters []uint16
+	timeStamp        []int64
 	modbus           *ModBus
+	lifeTime         int64 
 }
+
+// ValueTimestamp contents value and time of register
+// type ValueTimestamp struct {
+// 	value     uint16
+// 	timeStamp int64
+// }
 
 // Make создание сервера
 func Make() *Server {
 	server := &Server{}
 
 	server.holdingRegisters = make([]uint16, 100)
-	// server.holdingRegisters[0] = 12
-	// server.holdingRegisters[1] = 7
+	server.timeStamp = make([]int64, 100)
+	server.holdingRegisters[0] = 12
+	server.holdingRegisters[1] = 7
 
 	return server
 }
@@ -68,12 +78,25 @@ func (server *Server) Close() {
 	}
 }
 
+// SetLifeTime sets time of life in seconds
+func (server *Server) SetLifeTime(t int64) {
+	server.lifeTime = t
+}
+
 // func (server *Server) tcp_header() (header []byte) {
 
 // }
 // answer03 ответ на чтение регистров, лучше разместить в Modbus
 func (server *Server) answer03() (answer []byte) {
 	firstReg, qtyReg, lastReg := server.modbus.getFirstQtyRegs()
+
+	for i := firstReg; i < lastReg; i++ {
+		if time.Now().Unix() - server.timeStamp[i] >= server.lifeTime { 
+			answer = server.answerError(wrongReg)
+			return
+		} 
+	}
+	
 	data := make([]byte, 1)
 	data[0] = byte(qtyReg * 2)
 	data = append(data, uint16ToBytes(server.holdingRegisters[firstReg:lastReg])...)
@@ -86,7 +109,7 @@ func (server *Server) answer03() (answer []byte) {
 	answer[7] = server.modbus.function
 	answer = append(answer, data...)
 
-	return 
+	return
 }
 
 // // answer16 ответ на запись регистров, лучше разместить в Modbus
@@ -108,7 +131,11 @@ func (server *Server) answer16() (answer []byte) {
 	answer[7] = server.modbus.function
 	answer = append(answer, data...)
 
-	return 
+	for i := firstReg; i < lastReg; i++ {
+		server.timeStamp[i] = time.Now().Unix()
+	}
+
+	return
 }
 
 const (
@@ -125,7 +152,7 @@ func (server *Server) answerError(errorCode byte) (answer []byte) {
 	answer[7] = server.modbus.function + 0b10000000
 	answer[8] = errorCode
 
-	return 
+	return
 }
 
 func uint16ToBytes(values []uint16) []byte {

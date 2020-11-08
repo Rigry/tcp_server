@@ -9,6 +9,7 @@ func main() {
 	fmt.Println("Launching server...")
 
 	s := server.Make()
+	s.SetLifeTime(10) // 10 seconds
 
 	err := s.Listen()
 	if err != nil {
