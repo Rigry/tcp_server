@@ -6,14 +6,5 @@ go:
 
 script:
   - cd server
-  - go test -v -coverprofile=cover.out
+  - go test -v -coverprofile=cover.txt
   - cd ..
-
-deploy:
-  - provider: pages
-    skip-cleanup: true
-    github-token: $GITHUB_TOKEN  # Set in travis-ci.org dashboard, marked secure
-    keep-history: true
-    local-dir: html
-    on:
-      branch: master
