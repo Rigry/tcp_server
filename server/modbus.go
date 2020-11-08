@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ModBus структура модбас-сообщения
+// ModBus struct of message 
 type ModBus struct {
 	idTransaction uint16
 	idProtocol    uint16
@@ -44,39 +44,11 @@ func (modbus *ModBus) getData() (data []byte) {
 }
 
 // func (modbus *ModBus) answer03() (answer []byte) {
-// 	firstReg, qtyReg, lastReg := modbus.getFirstQtyRegs()
-// 	data := make([]byte, 1)
-// 	data[0] = byte(qtyReg * 2)
-// 	data = append(data, uint16ToBytes(regs[firstReg:lastReg])...)
-
-// 	answer = make([]byte, 8)
-// 	binary.BigEndian.PutUint16(answer[0:2], modbus.idTransaction)
-// 	binary.BigEndian.PutUint16(answer[2:4], modbus.idProtocol)
-// 	binary.BigEndian.PutUint16(answer[4:6], uint16(2+len(data)))
-// 	answer[6] = modbus.idUnit
-// 	answer[7] = modbus.function
-// 	answer = append(answer, data...)
 
 // 	return answer
 // }
 
 // func (modbus *ModBus) answer16() (answer []byte) {
-// 	firstReg, qtyReg, lastReg := modbus.getFirstQtyRegs()
-// 	values := bytesToUint16(modbus.getData()[5:])
-// 	// ошибка по кол-ву байт
-// 	// copy(server.holdingRegisters[firstReg:lastReg], values)
-
-// 	data := make([]byte, 4)
-// 	binary.BigEndian.PutUint16(data[0:2], firstReg)
-// 	binary.BigEndian.PutUint16(data[2:4], qtyReg)
-
-// 	answer = make([]byte, 8)
-// 	binary.BigEndian.PutUint16(answer[0:2], modbus.idTransaction)
-// 	binary.BigEndian.PutUint16(answer[2:4], modbus.idProtocol)
-// 	binary.BigEndian.PutUint16(answer[4:6], uint16(2+len(data)))
-// 	answer[6] = modbus.idUnit
-// 	answer[7] = modbus.function
-// 	answer = append(answer, data...)
 
 // 	return answer
 // }

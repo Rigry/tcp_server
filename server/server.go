@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-// Server структура сервера
+// Server struct
 type Server struct {
 	listener         []net.Listener
 	conn             net.Conn
 	holdingRegisters []uint16
 	timeStamp        []int64
 	modbus           *ModBus
-	lifeTime         int64 
+	lifeTime         int64
 }
 
 // ValueTimestamp contents value and time of register
@@ -23,7 +23,7 @@ type Server struct {
 // 	timeStamp int64
 // }
 
-// Make создание сервера
+// Make server
 func Make() *Server {
 	server := &Server{}
 
@@ -35,7 +35,7 @@ func Make() *Server {
 	return server
 }
 
-// Listen открытие соединения
+// Listen opening
 func (server *Server) Listen() (err error) {
 	listen, err := net.Listen("tcp", ":8081")
 	if err != nil {
@@ -71,7 +71,7 @@ func (server *Server) accept(listen net.Listener) (err error) {
 	}
 }
 
-// Close закрытие всех соединений
+// Close listening
 func (server *Server) Close() {
 	for _, listen := range server.listener {
 		listen.Close()
@@ -83,20 +83,22 @@ func (server *Server) SetLifeTime(t int64) {
 	server.lifeTime = t
 }
 
-// func (server *Server) tcp_header() (header []byte) {
-
-// }
-// answer03 ответ на чтение регистров, лучше разместить в Modbus
+// answer03 read holding registers, to place in ModBus
 func (server *Server) answer03() (answer []byte) {
 	firstReg, qtyReg, lastReg := server.modbus.getFirstQtyRegs()
 
+	if int(lastReg) > len(server.holdingRegisters) {
+		answer = server.answerError(wrongReg)
+		return
+	}
+
 	for i := firstReg; i < lastReg; i++ {
-		if time.Now().Unix() - server.timeStamp[i] >= server.lifeTime { 
+		if time.Now().Unix()-server.timeStamp[i] >= server.lifeTime {
 			answer = server.answerError(wrongReg)
 			return
-		} 
+		}
 	}
-	
+
 	data := make([]byte, 1)
 	data[0] = byte(qtyReg * 2)
 	data = append(data, uint16ToBytes(server.holdingRegisters[firstReg:lastReg])...)
@@ -112,11 +114,20 @@ func (server *Server) answer03() (answer []byte) {
 	return
 }
 
-// // answer16 ответ на запись регистров, лучше разместить в Modbus
+// answer16 write holding registers, to place in ModBus
 func (server *Server) answer16() (answer []byte) {
 	firstReg, qtyReg, lastReg := server.modbus.getFirstQtyRegs()
+
+	if int(lastReg) > len(server.holdingRegisters) {
+		answer = server.answerError(wrongReg)
+		return
+	}
+
 	values := bytesToUint16(server.modbus.getData()[5:])
-	// ошибка по кол-ву байт
+	if len(values) != int(qtyReg) {
+		answer = server.answerError(wrongReg)
+		return
+	}
 	copy(server.holdingRegisters[firstReg:lastReg], values)
 
 	data := make([]byte, 4)
@@ -147,7 +158,7 @@ func (server *Server) answerError(errorCode byte) (answer []byte) {
 	answer = make([]byte, 9)
 	binary.BigEndian.PutUint16(answer[0:2], server.modbus.idTransaction)
 	binary.BigEndian.PutUint16(answer[2:4], server.modbus.idProtocol)
-	binary.BigEndian.PutUint16(answer[4:6], 3) // длина сообщения в ответе с ошибкой
+	binary.BigEndian.PutUint16(answer[4:6], 3) // length of message in error response
 	answer[6] = server.modbus.idUnit
 	answer[7] = server.modbus.function + 0b10000000
 	answer[8] = errorCode
@@ -173,7 +184,7 @@ func bytesToUint16(bytes []byte) []uint16 {
 	return values
 }
 
-// HandleRequest обработчик запросов
+// HandleRequest handler
 func (server *Server) HandleRequest() {
 	switch server.modbus.function {
 	case 0x03:

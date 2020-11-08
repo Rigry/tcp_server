@@ -16,6 +16,32 @@ func TestAnswer16 (t *testing.T) {
 	}
 }
 
+func TestAnswer16BrokenPacket (t *testing.T) {
+	server := Make()
+	packet := []byte{0,1,0,0,0,0xB,1,0x10,0,0,0,2,4,0,8,0}
+	server.modbus, _ = getPacket(packet)
+	expected := []byte{0,1,0,0,0,3,1,0x90,2}
+	got := server.answer16()
+	for i := range got {
+		if got[i] != expected[i] {
+			t.Errorf("expected %v, got %v", expected[i], got[i])
+		}
+	}
+}
+
+func TestAnswer16WrongReg (t *testing.T) {
+	server := Make()
+	packet := []byte{0,1,0,0,0,0xB,1,0x10,0,0,0,101,4,0,8,0}
+	server.modbus, _ = getPacket(packet)
+	expected := []byte{0,1,0,0,0,3,1,0x90,2}
+	got := server.answer16()
+	for i := range got {
+		if got[i] != expected[i] {
+			t.Errorf("expected %v, got %v", expected[i], got[i])
+		}
+	}
+}
+
 func TestAnswer03 (t *testing.T) {
 	server := Make()
 	server.holdingRegisters[0] = 12
@@ -35,6 +61,19 @@ func TestAnswer03 (t *testing.T) {
 	time.Sleep(3 * time.Second)
 	expected = []byte{0,1,0,0,0,3,1,0x83,2}
 	got = server.answer03()
+	for i := range got {
+		if got[i] != expected[i] {
+			t.Errorf("expected %v, got %v", expected[i], got[i])
+		}
+	}
+}
+
+func TestAnswer03WrongReg (t *testing.T) {
+	server := Make()
+	packet := []byte{0,1,0,0,0,6,1,0x3,0,0,0,101}
+	server.modbus, _ = getPacket(packet)
+	expected := []byte{0,1,0,0,0,3,1,0x83,2}
+	got := server.answer03()
 	for i := range got {
 		if got[i] != expected[i] {
 			t.Errorf("expected %v, got %v", expected[i], got[i])
