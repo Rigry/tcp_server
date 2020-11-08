@@ -4,7 +4,7 @@ go:
   - 1.15.x
   - master
 
-go_import_path: github.com/tcp_server/server
+go_import_path: https://github.com/Rigry/tcp_server.git
 
 script: 
   - go test -v -coverprofile=cover.out
