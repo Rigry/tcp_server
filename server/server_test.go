@@ -30,6 +30,19 @@ func TestAnswer03 (t *testing.T) {
 	}
 }
 
+func TestAnsweError (t *testing.T) {
+	server := Make()
+	packet := []byte{0,1,0,0,0,6,1,6,0,0,0,2}
+	server.modbus, _ = getPacket(packet)
+	expected := []byte{0,1,0,0,0,3,1,0x86,1}
+	got := server.answerError(1)
+	for i := range got {
+		if got[i] != expected[i] {
+			t.Errorf("expected %v, got %v", expected[i], got[i])
+		}
+	}
+}
+
 func TestUint16ToBytes (t *testing.T) {
 	values := []uint16{1207, 1990}
 	bytes := uint16ToBytes(values)
