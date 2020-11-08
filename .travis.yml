@@ -6,5 +6,8 @@ go:
 
 script:
   - cd server
-  - go test -v -coverprofile=cover.txt
+  - go test -v -coverprofile=cover.txt -covermode=atomic
   - cd ..
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
