@@ -4,6 +4,8 @@ go:
   - 1.15.x
   - master
 
+go_import_path: github.com/tcp_server/server
+
 script: 
   - go test -v -coverprofile=cover.out
   - mkdir ./html
