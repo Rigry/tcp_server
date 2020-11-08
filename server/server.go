@@ -86,7 +86,7 @@ func (server *Server) answer03() (answer []byte) {
 	answer[7] = server.modbus.function
 	answer = append(answer, data...)
 
-	return answer
+	return 
 }
 
 // // answer16 ответ на запись регистров, лучше разместить в Modbus
@@ -108,7 +108,24 @@ func (server *Server) answer16() (answer []byte) {
 	answer[7] = server.modbus.function
 	answer = append(answer, data...)
 
-	return answer
+	return 
+}
+
+const (
+	wrongFunc byte = 1 << iota
+	wrongReg
+)
+
+func (server *Server) answerError(errorCode byte) (answer []byte) {
+	answer = make([]byte, 9)
+	binary.BigEndian.PutUint16(answer[0:2], server.modbus.idTransaction)
+	binary.BigEndian.PutUint16(answer[2:4], server.modbus.idProtocol)
+	binary.BigEndian.PutUint16(answer[4:6], 3) // длина сообщения в ответе с ошибкой
+	answer[6] = server.modbus.idUnit
+	answer[7] = server.modbus.function + 0b10000000
+	answer[8] = errorCode
+
+	return 
 }
 
 func uint16ToBytes(values []uint16) []byte {
@@ -137,6 +154,6 @@ func (server *Server) HandleRequest() {
 	case 0x10:
 		server.conn.Write(server.answer16())
 	default:
-		fmt.Println("Function " + string(server.modbus.function) + " not realised")
+		server.conn.Write(server.answerError(wrongFunc))
 	}
 }
