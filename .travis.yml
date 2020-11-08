@@ -4,7 +4,8 @@ go:
   - 1.15.x
   - master
 
-script: 
+script:
+  - cd server
   - go test 
 
 deploy:
