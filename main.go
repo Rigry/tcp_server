@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 import "time"
-import "github.com/Rigry/tcp_server/server"
+import "tcp_server/server"
 
 func main() {
 
