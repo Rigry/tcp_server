@@ -7,8 +7,6 @@ go:
 script:
   - cd server
   - go test -v -coverprofile=cover.out
-  - mkdir ./html
-  - go tool cover -html=cover.out -o ./html/index.html
   - cd ..
 
 deploy:
